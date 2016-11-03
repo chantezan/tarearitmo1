@@ -7,24 +7,24 @@ public class Main {
         RTree nuevo = new RTree(5,5,6,7,8);
         RTree raiz = new RTree(nuevo);
         nuevo = new RTree(5,6,7,8,9);
-        raiz = raiz.insert(nuevo);
+        raiz = (RTree) raiz.insert(nuevo);
         System.out.println("insertado 2");
         System.out.print(raiz.toString());
 
         nuevo = new RTree(5,8,9,4,5);
-        raiz = raiz.insert(nuevo);
+        raiz = (RTree) raiz.insert(nuevo);
         System.out.println("insertado 3");
         System.out.print(raiz.toString());
         nuevo = new RTree(5,11,12,3,4);
-        raiz = raiz.insert(nuevo);
+        raiz = (RTree) raiz.insert(nuevo);
         System.out.println("insertado 4");
         System.out.print(raiz.toString());
         nuevo = new RTree(5,13,14,7,8);
-        raiz = raiz.insert(nuevo);
+        raiz = (RTree) raiz.insert(nuevo);
         System.out.println("insertado 5");
         System.out.print(raiz.toString());
         nuevo = new RTree(5,15,16,2,3);
-        raiz = raiz.insert(nuevo);
+        raiz = (RTree) raiz.insert(nuevo);
         System.out.println("insertado 6");
         System.out.print(raiz.toString());
 

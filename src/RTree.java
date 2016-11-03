@@ -156,7 +156,7 @@ public class RTree {
 
         elementos = hijos[tree1].elementos;
         padre.actualizar(hijos[tree1]);
-        padre.ponerElemento(hijos[tree1]);
+        padre.ponerElemento(hijos[tree2]);
         hijos = hijos[tree1].hijos;
         RTree raiz = padre;
         while (raiz.padre!=null){
