@@ -7,68 +7,43 @@ public class RTree {
     RTree[] hijos;
     int m;
     int elementos = 0;
-    double largoN = 0;
-    double anchoN = 0;
     int minimo;
 
     public RTree(int m) {
-        hijos = new RTree[m];
+        hijos = new RTree[m+1];
         this.m = m;
-        minimo = m*40/100 + 1;
+        minimo = m * 40/100;
     }
 
-    public RTree(int m, double x, double y) {
+    public RTree(int m, double x1,double x2,double y1, double y2) {
         this(m);
-        mbr[0] = x;
-        mbr[1] = x;
-        mbr[2] = y;
-        mbr[3] = y;
+        mbr[0] = x1;
+        mbr[1] = x2;
+        mbr[2] = y1;
+        mbr[3] = y2;
     }
 
     public RTree(RTree tree){
-        this(tree.m,tree.mbr[0],tree.mbr[2]);
+        this(tree.m,tree.mbr[0],tree.mbr[1],tree.mbr[2],tree.mbr[3]);
         hijos[0] = tree;
         hijos[0].padre = this;
         elementos++;
     }
 
-    public void normalizar(double largo, double ancho) {
-        largoN = (mbr[3] - mbr[2])/largo;
-        anchoN = (mbr[1] - mbr[0])/ancho;
-    }
 
     public boolean esHoja(){
-        if (mbr[0]==mbr[1] && mbr[2]==mbr[3]){
-            return true;
-        }
-        return false;
-    }
-
-    public double mayorN() {
-        if (largoN > anchoN) return largoN;
-        return anchoN;
-    }
-
-    public void convertir() {
-        elementos++;
-        hijos[0] = new RTree(m,mbr[0],mbr[2]);
-        hijos[0].padre = this;
+        return elementos == 0;
     }
 
     public RTree insert(RTree tree) {
 
-        if(hijos[0].area()==0) {
+        if(hijos[0] == null || hijos[0].esHoja()) {
             return ponerElemento(tree);
         }
 
-        if(tree.elementos>0) {
-            return ponerElemento(tree);
-
-        }
         RTree seleccionado = hijos[0];
         for (RTree hijo : hijos) {
             if (hijo != null) {
-
                 if (hijo.grow(tree) < seleccionado.grow(tree)) seleccionado = hijo;
                 else if (hijo.grow(tree) == seleccionado.grow(tree)) {
                     if (hijo.area() < seleccionado.area()) seleccionado = hijo;
@@ -102,68 +77,70 @@ public class RTree {
     }
 
     public RTree overFlow(RTree nuevo){
-        RTree tree1;
-        RTree tree2;
+        int tree1;
+        int tree2;
+        hijos[5] = nuevo;
+        int arriba = -1;
+        int abajo = -1;
+        int derecha = -1;
+        int izquierda = -1;
+        double rangoD = 0;
+        double rangoI = 99999999;
+        double rangoAr = 0;
+        double rangoAb = 99999999;
+        double hor1 = 99999999;;
+        double hor2 = 0;
+        double ver1 = 99999999;;
+        double ver2 = 0;
 
-        double hor1 = 0;
-        double hor2 = 99999999;
-        double ver1 = 0;
-        double ver2 = 99999999;
+        for (int j = 0;j < hijos.length ; j++){
+            RTree hijo = hijos[j];
+            if (hijo.mbr[0] > hor2) hor2 = hijo.mbr[0];
 
-        for (RTree hijo : hijos){
-            if (hijo.mbr[0] < hor2) hor2 = hijo.mbr[0];
-            if (hijo.mbr[1] > hor1) hor1 = hijo.mbr[1];
-            if (hijo.mbr[2] < ver2) ver2 = hijo.mbr[2];
-            if (hijo.mbr[3] > ver1) ver1 = hijo.mbr[3];
+            if (hijo.mbr[1] < hor1) hor1 = hijo.mbr[1];
+
+            if (hijo.mbr[2] > ver2) ver2 = hijo.mbr[2];
+
+            if (hijo.mbr[3] < ver1) ver1 = hijo.mbr[3];
+
+            if (izquierda == -1 || hijo.mbr[0] < hijos[izquierda].mbr[0]) izquierda = j;
+            else if (derecha == -1 || hijo.mbr[1] > hijos[derecha].mbr[1]) derecha = j;
+            if (abajo == -1 || hijo.mbr[2] < hijos[abajo].mbr[2]) abajo = j;
+            else if (arriba == -1 || hijo.mbr[1] > hijos[arriba].mbr[1]) arriba = j;
+
+            if(hijo.mbr[0] < rangoI) rangoI = hijo.mbr[0];
+            if(hijo.mbr[1] > rangoD) rangoD = hijo.mbr[1];
+            if(hijo.mbr[2] < rangoAb) rangoAb = hijo.mbr[2];
+            if(hijo.mbr[3] > rangoAr) rangoAr = hijo.mbr[3];
         }
-        for (RTree hijo : hijos){
-            hijo.normalizar(hor2-hor1,ver2-ver1);
-        }
-        if(hijos[0].mayorN() < hijos[1].mayorN()){
-            tree1 = hijos[1];
-            tree2 = hijos[0];
+
+        if((rangoD - rangoI)/(hor2-hor1) > (rangoAr - rangoAb)/(ver2-ver1)){
+            tree1 = izquierda;
+            tree2 = derecha;
         }
         else {
-            tree1 = hijos[0];
-            tree2 = hijos[1];
+            tree1 = abajo;
+            tree2 = arriba;
         }
 
-        for (RTree hijo : hijos){
-            if(tree1.mayorN() < hijo.mayorN()) {
-                tree2 = tree1;
-                tree1 = hijo;
-            }
-            else {
-                if(tree2.mayorN()<hijo.mayorN()) {
-                    tree2 = hijo;
-                }
-            }
-        }
-        tree1.convertir();
-        tree2.convertir();
-        if(tree1.grow(nuevo) < tree2.grow(nuevo)) {
-            tree1.insert(nuevo);
-        }
-        else {
-            tree2.insert(nuevo);
-        }
-
-        int i = 2;
+        int i = 0;
         for (RTree hijo : hijos) {
-            if(!hijo.equals(tree1) && !hijo.equals(tree2)){
-                if((m - i) + tree1.elementos == minimo){
-                    tree1.insert(hijo);
+            if(i!=tree1 && i!=tree2){
+                if((m - i + 1) + hijos[tree1].elementos == minimo){
+                    hijos[tree1].insert(hijo);
                 }
                 else {
-                    if((m - i) + tree2.elementos == minimo){
-                        tree2.insert(hijo);
+                    if((m - i + 1) + hijos[tree2].elementos == minimo){
+                        hijos[tree2].insert(hijo);
                     }
                     else {
-                        if(tree1.grow(hijo) < tree2.grow(hijo)){
-                            tree1.insert(hijo);
+                        double a1 = hijos[tree1].grow(hijo);
+                        double a2 = hijos[tree2].grow(hijo);
+                        if(hijos[tree1].grow(hijo) < hijos[tree2].grow(hijo)){
+                            hijos[tree1].insert(hijo);
                         }
                         else {
-                            tree2.insert(hijo);
+                            hijos[tree2].insert(hijo);
                         }
                     }
                 }
@@ -171,15 +148,16 @@ public class RTree {
             i++;
         }
         if(padre==null){
-            RTree raiznueva = new RTree(tree1);
+            RTree raiznueva = new RTree(hijos[tree1]);
             padre = raiznueva;
         }
 
-        mbr = tree1.mbr;
-        hijos = tree1.hijos;
-        elementos = tree1.elementos;
-        padre.actualizar(tree1);
-        padre.insert(tree2);
+        mbr = hijos[tree1].mbr;
+
+        elementos = hijos[tree1].elementos;
+        padre.actualizar(hijos[tree1]);
+        padre.ponerElemento(hijos[tree1]);
+        hijos = hijos[tree1].hijos;
         RTree raiz = padre;
         while (raiz.padre!=null){
             raiz = raiz.padre;
@@ -193,7 +171,15 @@ public class RTree {
     }
 
     public double areaHip(RTree arbol) {
-        return 0;
+        double aux1 = mbr[0];
+        double aux2 = mbr[1];
+        double aux3 = mbr[2];
+        double aux4 = mbr[3];
+        if(arbol.mbr[0]<aux1) aux1 = arbol.mbr[0];
+        if(aux2<arbol.mbr[1]) aux2 = arbol.mbr[1];
+        if(arbol.mbr[2]<aux3) aux3 = arbol.mbr[2];
+        if (arbol.mbr[3]>aux4) aux4= arbol.mbr[3];
+        return (aux2 - aux1) * (aux4 - aux3);
     }
 
     public double areaHip(double x, double y){
@@ -226,4 +212,6 @@ public class RTree {
         }
         return print;
     }
+
+
 }
