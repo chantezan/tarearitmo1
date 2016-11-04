@@ -212,6 +212,15 @@ public class RTree {
         }
         return print;
     }
+    
+     
+    
+   
+
+	public void convertFromString(String str) {
+		// TODO Auto-generated method stub
+		
+	}
 
 
 }
