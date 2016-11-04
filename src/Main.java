@@ -28,6 +28,8 @@ public class Main {
         System.out.println("insertado 6");
         System.out.print(raiz.toString());
 
+      //  raiz = raiz.insert(nuevo);
+
 
 
 

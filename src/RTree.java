@@ -76,6 +76,11 @@ public class RTree {
 
     }
 
+    public void convertir(){
+        hijos[0] = new RTree(m,mbr[0],mbr[1],mbr[2],mbr[3]);
+        elementos++;
+    }
+
     public RTree overFlow(RTree nuevo){
         int tree1;
         int tree2;
@@ -122,6 +127,9 @@ public class RTree {
             tree1 = abajo;
             tree2 = arriba;
         }
+
+        hijos[tree1].convertir();
+        hijos[tree2].convertir();
 
         int i = 0;
         for (RTree hijo : hijos) {

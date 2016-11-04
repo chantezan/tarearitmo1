@@ -54,6 +54,11 @@ public class RTree2 extends RTree {
         }
     }
 
+    public void convertir(){
+        hijos[0] = new RTree2(m,mbr[0],mbr[1],mbr[2],mbr[3]);
+        elementos++;
+    }
+
     @Override
     public RTree overFlow(RTree nuevo){
         int tree1;
