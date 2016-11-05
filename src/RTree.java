@@ -1,3 +1,5 @@
+import java.io.*;
+
 /**
  * Created by X455LJ on 28-10-2016.
  */
@@ -5,26 +7,42 @@ public class RTree {
     RTree padre;
     double[] mbr = new double[4];
     RTree[] hijos;
-    int m;
+    int m = 4;
     int elementos = 0;
     int minimo;
+    int identificador;
 
-    public RTree(int m) {
+    public RTree() {
         hijos = new RTree[m+1];
-        this.m = m;
         minimo = m * 40/100;
+
     }
 
-    public RTree(int m, double x1,double x2,double y1, double y2) {
-        this(m);
+    public RTree(double x1,double x2,double y1, double y2) {
+        this();
         mbr[0] = x1;
         mbr[1] = x2;
         mbr[2] = y1;
         mbr[3] = y2;
     }
 
-    public RTree(RTree tree){
-        this(tree.m,tree.mbr[0],tree.mbr[1],tree.mbr[2],tree.mbr[3]);
+    public RTree(int identificador, double x1,double x2,double y1, double y2) {
+        this();
+        this.identificador = identificador;
+        mbr[0] = x1;
+        mbr[1] = x2;
+        mbr[2] = y1;
+        mbr[3] = y2;
+    }
+
+    public RTree(RTree tree) throws FileNotFoundException, UnsupportedEncodingException {
+        this(tree.mbr[0],tree.mbr[1],tree.mbr[2],tree.mbr[3]);
+        if (tree.identificador > 0) {
+            PrintWriter writer = new PrintWriter("rectangulos/"+tree.identificador+".txt", "UTF-8");
+            writer.println(tree.mbr[0]+" "+tree.mbr[1]+" "+tree.mbr[2]+" "+tree.mbr[3]+" ");
+            writer.close();
+        }
+
         hijos[0] = tree;
         hijos[0].padre = this;
         elementos++;
@@ -35,9 +53,12 @@ public class RTree {
         return elementos == 0;
     }
 
-    public RTree insert(RTree tree) {
+    public RTree insert(RTree tree) throws FileNotFoundException, UnsupportedEncodingException {
 
         if(hijos[0] == null || hijos[0].esHoja()) {
+            PrintWriter writer = new PrintWriter("rectangulos/"+tree.identificador+".txt", "UTF-8");
+            writer.println(tree.mbr[0]+" "+tree.mbr[1]+" "+tree.mbr[2]+" "+tree.mbr[3]+" ");
+            writer.close();
             return ponerElemento(tree);
         }
 
@@ -53,7 +74,7 @@ public class RTree {
         return seleccionado.insert(tree);
     }
 
-    public RTree ponerElemento(RTree tree){
+    public RTree ponerElemento(RTree tree) throws FileNotFoundException, UnsupportedEncodingException {
         if(elementos == m) {
             return overFlow(tree);
         }
@@ -76,15 +97,17 @@ public class RTree {
 
     }
 
-    public void convertir(){
-        hijos[0] = new RTree(m,mbr[0],mbr[1],mbr[2],mbr[3]);
-        elementos++;
+    public RTree convertir(){
+        RTree aux = new RTree(mbr[0],mbr[1],mbr[2],mbr[3]);
+        aux.hijos[0] = this;
+        aux.elementos++;
+        return aux;
     }
 
-    public RTree overFlow(RTree nuevo){
+    public RTree overFlow(RTree nuevo) throws FileNotFoundException, UnsupportedEncodingException {
         int tree1;
         int tree2;
-        hijos[5] = nuevo;
+        hijos[m] = nuevo;
         int arriba = -1;
         int abajo = -1;
         int derecha = -1;
@@ -111,7 +134,7 @@ public class RTree {
             if (izquierda == -1 || hijo.mbr[0] < hijos[izquierda].mbr[0]) izquierda = j;
             else if (derecha == -1 || hijo.mbr[1] > hijos[derecha].mbr[1]) derecha = j;
             if (abajo == -1 || hijo.mbr[2] < hijos[abajo].mbr[2]) abajo = j;
-            else if (arriba == -1 || hijo.mbr[1] > hijos[arriba].mbr[1]) arriba = j;
+            else if (arriba == -1 || hijo.mbr[3] > hijos[arriba].mbr[3]) arriba = j;
 
             if(hijo.mbr[0] < rangoI) rangoI = hijo.mbr[0];
             if(hijo.mbr[1] > rangoD) rangoD = hijo.mbr[1];
@@ -128,27 +151,27 @@ public class RTree {
             tree2 = arriba;
         }
 
-        hijos[tree1].convertir();
-        hijos[tree2].convertir();
+        hijos[tree1] = hijos[tree1].convertir();
+        hijos[tree2] = hijos[tree2].convertir();
 
         int i = 0;
         for (RTree hijo : hijos) {
             if(i!=tree1 && i!=tree2){
                 if((m - i + 1) + hijos[tree1].elementos == minimo){
-                    hijos[tree1].insert(hijo);
+                    hijos[tree1].ponerElemento(hijo);
                 }
                 else {
                     if((m - i + 1) + hijos[tree2].elementos == minimo){
-                        hijos[tree2].insert(hijo);
+                        hijos[tree2].ponerElemento(hijo);
                     }
                     else {
                         double a1 = hijos[tree1].grow(hijo);
                         double a2 = hijos[tree2].grow(hijo);
                         if(hijos[tree1].grow(hijo) < hijos[tree2].grow(hijo)){
-                            hijos[tree1].insert(hijo);
+                            hijos[tree1].ponerElemento(hijo);
                         }
                         else {
-                            hijos[tree2].insert(hijo);
+                            hijos[tree2].ponerElemento(hijo);
                         }
                     }
                 }
@@ -207,14 +230,42 @@ public class RTree {
 
     }
 
-    public boolean inside(double x, double y){
-        if(x<mbr[0] || x>mbr[1]) return false;
-        if(y<mbr[2] || y>mbr[3]) return false;
+    public boolean inside(double x1,double x2,double y1, double y2){
+        if((x1 >= mbr[0] && x1 <= mbr[1]) || x2 >= mbr[0] && x2 <= mbr[1]) {
+            if(y1 >= mbr[2] && y1 <= mbr[3]) return true;
+            if(y2 >= mbr[2] && y2 <= mbr[3]) return true;
+        }
         return false;
     }
 
+    public String buscar(double x1,double x2,double y1, double y2) throws IOException {
+        String string = "";
+        if(hijos[0].esHoja()){
+            for (RTree hijo : hijos) {
+                if(hijo!=null){
+
+                    BufferedReader in = new BufferedReader(new FileReader("rectangulos/"+hijo.identificador+".txt"));
+                    String str = in.readLine();
+                    String str1[] = str.split(" ");
+                    RTree nuevo = new RTree(Double.parseDouble(str1[0]),Double.parseDouble(str1[1]),Double.parseDouble(str1[2]),Double.parseDouble(str1[3]));
+                    if (nuevo.inside(x1,x2,y1,y2)) return hijo.identificador+" "+mbr[0]+" "+mbr[1]+" "+mbr[2]+" "+mbr[3]+"\n";
+                }
+            }
+        }
+        else {
+            for (RTree hijo : hijos) {
+                if(hijo!=null && hijo.inside(x1,x2,y1,y2)) string = string + hijo.buscar(x1,x2,y1,y2);
+            }
+        }
+        return string;
+    }
+
     public String toString(){
-        String print = "Raiz "+mbr[0]+" "+mbr[1]+" "+mbr[2]+" "+mbr[3]+"\n";
+        String print;
+        if(esHoja()) print = "Hoja "+identificador+" "+mbr[0]+" "+mbr[1]+" "+mbr[2]+" "+mbr[3]+"\n";
+        else {
+            print = "Raiz "+mbr[0]+" "+mbr[1]+" "+mbr[2]+" "+mbr[3]+"\n";
+        }
         for (RTree hijo : hijos){
             if(hijo!=null) print += hijo.toString();
         }

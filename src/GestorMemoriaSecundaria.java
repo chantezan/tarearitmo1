@@ -56,7 +56,7 @@ public class GestorMemoriaSecundaria {
 	}
 	
 	public RTree getFromDisk(String diskFilePath, long blockNumber){
-		RTree tree = new RTree(0);
+		RTree tree = new RTree();
 		
 		
 		String num_s;

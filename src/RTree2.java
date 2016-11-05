@@ -1,3 +1,5 @@
+import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 /**
@@ -8,16 +10,16 @@ public class RTree2 extends RTree {
     int[] orderH;
     int[] orderV;
 
-    public RTree2(int m) {
-        super(m);
+    public RTree2() {
+        super();
 
     }
 
     public RTree2(int m, double x1, double x2, double y1, double y2) {
-        super(m, x1, x2, y1, y2);
+        super( x1, x2, y1, y2);
     }
 
-    public RTree2(RTree tree) {
+    public RTree2(RTree tree) throws FileNotFoundException, UnsupportedEncodingException {
         super(tree);
     }
 
@@ -54,13 +56,8 @@ public class RTree2 extends RTree {
         }
     }
 
-    public void convertir(){
-        hijos[0] = new RTree2(m,mbr[0],mbr[1],mbr[2],mbr[3]);
-        elementos++;
-    }
-
     @Override
-    public RTree overFlow(RTree nuevo){
+    public RTree overFlow(RTree nuevo) throws FileNotFoundException, UnsupportedEncodingException {
         int tree1;
         int tree2;
         hijos[5] = nuevo;
@@ -110,6 +107,10 @@ public class RTree2 extends RTree {
             tree1 = abajo;
             tree2 = arriba;
         }
+
+        hijos[tree1] = hijos[tree1].convertir();
+        hijos[tree2] = hijos[tree2].convertir();
+
         int i = 0;
         for(int j = 0;j < hijos.length; j++) {
             if(indice[j]!=tree1 && indice[j]!=tree2) {
